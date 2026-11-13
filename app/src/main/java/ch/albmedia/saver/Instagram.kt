@@ -113,6 +113,21 @@ object Instagram {
         val id = item.optString("pk").ifEmpty { item.optString("id").substringBefore("_") }
         val name = "${owner}_$id"
 
+        // Vorschaubild (ca. 320–640 px breit) und bestes Bild suchen
+        val candidates = item.optJSONObject("image_versions2")?.optJSONArray("candidates")
+        var bestImg: JSONObject? = null
+        var thumb: String? = null
+        if (candidates != null && candidates.length() > 0) {
+            var thumbW = Int.MAX_VALUE
+            for (i in 0 until candidates.length()) {
+                val c = candidates.getJSONObject(i)
+                val w = c.optInt("width")
+                if (bestImg == null || w > bestImg.optInt("width")) bestImg = c
+                if (w in 300 until thumbW) { thumbW = w; thumb = c.optString("url") }
+            }
+            if (thumb == null) thumb = bestImg?.optString("url")
+        }
+
         val videos = item.optJSONArray("video_versions")
         if (videos != null && videos.length() > 0) {
             var best: JSONObject = videos.getJSONObject(0)
@@ -120,17 +135,9 @@ object Instagram {
                 val v = videos.getJSONObject(i)
                 if (v.optInt("width") * v.optInt("height") > best.optInt("width") * best.optInt("height")) best = v
             }
-            out += Media(best.getString("url"), "mp4", name)
+            out += Media(best.getString("url"), "mp4", name, thumb)
             return
         }
-        val candidates = item.optJSONObject("image_versions2")?.optJSONArray("candidates")
-        if (candidates != null && candidates.length() > 0) {
-            var best: JSONObject = candidates.getJSONObject(0)
-            for (i in 1 until candidates.length()) {
-                val c = candidates.getJSONObject(i)
-                if (c.optInt("width") > best.optInt("width")) best = c
-            }
-            out += Media(best.getString("url"), "jpg", name)
-        }
+        if (bestImg != null) out += Media(bestImg.getString("url"), "jpg", name, thumb)
     }
 }

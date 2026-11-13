@@ -5,7 +5,7 @@ import org.json.JSONArray
 import java.net.HttpURLConnection
 import java.net.URL
 
-data class Media(val url: String, val ext: String, val name: String)
+data class Media(val url: String, val ext: String, val name: String, val thumb: String? = null)
 
 class ExtractException(msg: String) : Exception(msg)
 

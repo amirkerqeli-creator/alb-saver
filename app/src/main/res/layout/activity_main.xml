@@ -109,6 +109,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:alpha="0.6"
-            android:text="Tipp: In Instagram oder Facebook auf „Teilen“ tippen und ALB Saver wählen – der Download startet automatisch. Gespeichert wird unter Filme/ALBSaver bzw. Bilder/ALBSaver." />
+            android:text="Tipp: In Instagram oder Facebook auf „Teilen“ tippen und ALB Saver wählen – dann Bilder/Videos auswählen und herunterladen. Gespeichert wird unter Filme/ALBSaver bzw. Bilder/ALBSaver." />
     </LinearLayout>
 </ScrollView>

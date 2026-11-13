@@ -11,8 +11,17 @@ android {
         applicationId = "ch.albmedia.saver"
         minSdk = 29
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
+    }
+    // Fester Schlüssel: so lässt sich jede neue APK als Update über die alte installieren
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
     buildTypes {
         release { isMinifyEnabled = false }

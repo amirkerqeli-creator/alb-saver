@@ -35,13 +35,18 @@ object Facebook {
         val id = Regex("""(?:videos/|v=|reel/)(\d+)""").find(r.finalUrl)?.groupValues?.get(1)
             ?: System.currentTimeMillis().toString()
 
+        val thumb = Regex("""<meta property="og:image" content="([^"]+)"""").find(html)
+            ?.groupValues?.get(1)?.replace("&amp;", "&")
+            ?: Regex(""""preferred_thumbnail":\{"image":\{"uri":"([^"]+)"""").find(html)
+                ?.groupValues?.get(1)?.let { Net.unescapeJson(it) }
+
         for (key in KEYS) {
             val m = Regex("\"$key\":\"([^\"]+)\"").find(html) ?: continue
-            return listOf(Media(Net.unescapeJson(m.groupValues[1]), "mp4", "facebook_$id"))
+            return listOf(Media(Net.unescapeJson(m.groupValues[1]), "mp4", "facebook_$id", thumb))
         }
         for (key in listOf("hd_src", "sd_src")) {
             val m = Regex("$key:\"([^\"]+)\"").find(html) ?: continue
-            return listOf(Media(Net.unescapeJson(m.groupValues[1]), "mp4", "facebook_$id"))
+            return listOf(Media(Net.unescapeJson(m.groupValues[1]), "mp4", "facebook_$id", thumb))
         }
 
         throw ExtractException(

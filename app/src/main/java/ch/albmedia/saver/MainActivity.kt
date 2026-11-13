@@ -108,27 +108,28 @@ class MainActivity : Activity() {
         status.text = "Suche Medien …"
 
         Thread {
-            val result = try {
-                val items = Saver.extract(url)
-                Saver.enqueue(applicationContext, items)
-                val videos = items.count { it.ext == "mp4" }
-                val photos = items.size - videos
-                val parts = listOfNotNull(
-                    if (videos > 0) "$videos Video${if (videos > 1) "s" else ""}" else null,
-                    if (photos > 0) "$photos Foto${if (photos > 1) "s" else ""}" else null
-                )
-                "✓ ${parts.joinToString(" und ")} werden gespeichert (siehe Benachrichtigung / Galerie)."
+            var items: List<Media> = emptyList()
+            val error = try {
+                items = Saver.extract(url)
+                null
             } catch (e: ExtractException) {
                 "✗ ${e.message}"
             } catch (e: Exception) {
                 "✗ Fehler: ${e.javaClass.simpleName} ${e.message ?: ""}"
             }
             runOnUiThread {
-                status.text = result
                 progress.visibility = View.GONE
                 downloadBtn.isEnabled = true
                 busy = false
-                if (result.startsWith("✓")) urlInput.setText("")
+                if (error != null) {
+                    status.text = error
+                } else {
+                    status.text = ""
+                    urlInput.setText("")
+                    // Auswahl anzeigen: alle Bilder/Videos des Posts, einzeln oder alle wählbar
+                    PickerActivity.pending = items
+                    startActivity(Intent(this, PickerActivity::class.java))
+                }
             }
         }.start()
     }
