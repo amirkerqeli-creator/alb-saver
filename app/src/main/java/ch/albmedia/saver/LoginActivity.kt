@@ -12,7 +12,6 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -30,12 +29,19 @@ class LoginActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             fitsSystemWindows = true
         }
-        val done = Button(this).apply {
+        val done = TextView(this).apply {
             text = "Fertig – zurück zur App"
+            textSize = 15f
+            setTextColor(android.graphics.Color.WHITE)
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            gravity = android.view.Gravity.CENTER
+            setBackgroundResource(R.drawable.bg_primary)
             setOnClickListener { close() }
         }
         info = TextView(this).apply {
-            setPadding(24, 8, 24, 8)
+            setPadding(36, 18, 36, 18)
+            textSize = 13f
+            setTextColor(getColor(R.color.muted))
             text = "Melde dich an. Die App erkennt die Anmeldung automatisch."
         }
 
@@ -89,7 +95,8 @@ class LoginActivity : Activity() {
             }
         }
 
-        root.addView(done, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+        val m = (12 * resources.displayMetrics.density).toInt()
+        root.addView(done, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, m * 4).apply { setMargins(m, m, m, 0) })
         root.addView(info, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
         root.addView(web, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
         setContentView(root)

@@ -13,7 +13,6 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.GridView
 import android.widget.ImageView
@@ -35,8 +34,8 @@ class PickerActivity : Activity() {
     private lateinit var items: List<Media>
     private val selected = mutableSetOf<Int>()
     private lateinit var title: TextView
-    private lateinit var toggleBtn: Button
-    private lateinit var downloadBtn: Button
+    private lateinit var toggleBtn: TextView
+    private lateinit var downloadBtn: TextView
     private lateinit var adapter: Adapter
 
     private val pool = Executors.newFixedThreadPool(4)
@@ -65,14 +64,21 @@ class PickerActivity : Activity() {
             textSize = 18f
             setTypeface(typeface, Typeface.BOLD)
         }
-        toggleBtn = Button(this).apply {
+        toggleBtn = TextView(this).apply {
+            setTextColor(Color.WHITE)
+            textSize = 14f
+            setTypeface(typeface, Typeface.BOLD)
+            gravity = Gravity.CENTER
+            setPadding(dp(16), 0, dp(16), 0)
+            minHeight = dp(38)
+            setBackgroundResource(R.drawable.bg_small_btn)
             setOnClickListener {
                 if (selected.size == items.size) selected.clear() else selected.addAll(items.indices)
                 refresh()
             }
         }
         header.addView(title, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-        header.addView(toggleBtn)
+        header.addView(toggleBtn, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(38)))
 
         val grid = GridView(this).apply {
             numColumns = 3
@@ -89,13 +95,17 @@ class PickerActivity : Activity() {
             refresh()
         }
 
-        downloadBtn = Button(this).apply {
+        downloadBtn = TextView(this).apply {
             textSize = 16f
+            setTextColor(Color.WHITE)
+            setTypeface(typeface, Typeface.BOLD)
+            gravity = Gravity.CENTER
+            setBackgroundResource(R.drawable.bg_primary)
             setOnClickListener { download() }
         }
         val footer = LinearLayout(this).apply {
-            setPadding(pad, pad / 2, pad, pad / 2)
-            addView(downloadBtn, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(56)))
+            setPadding(pad, pad / 2, pad, pad)
+            addView(downloadBtn, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(54)))
         }
 
         root.addView(header)
@@ -179,7 +189,7 @@ class PickerActivity : Activity() {
 
         private fun createCell(): View {
             val cell = SquareFrame(this@PickerActivity)
-            cell.setBackgroundColor(Color.parseColor("#33888888"))
+            cell.setBackgroundColor(Color.parseColor("#23232B"))
             val img = ImageView(this@PickerActivity).apply { scaleType = ImageView.ScaleType.CENTER_CROP }
             val dim = View(this@PickerActivity).apply { setBackgroundColor(Color.argb(110, 0, 0, 0)) }
             val check = TextView(this@PickerActivity).apply {
