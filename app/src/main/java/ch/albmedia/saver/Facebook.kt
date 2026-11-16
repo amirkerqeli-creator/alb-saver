@@ -14,7 +14,7 @@ object Facebook {
         "playable_url"
     )
 
-    fun extract(input: String): List<Media> {
+    fun extract(input: String): Extracted {
         val url = input
             .replace("://m.facebook.com", "://www.facebook.com")
             .replace("://mbasic.facebook.com", "://www.facebook.com")
@@ -40,13 +40,19 @@ object Facebook {
             ?: Regex(""""preferred_thumbnail":\{"image":\{"uri":"([^"]+)"""").find(html)
                 ?.groupValues?.get(1)?.let { Net.unescapeJson(it) }
 
+        val caption = Regex("""<meta property="og:description" content="([^"]*)"""").find(html)
+            ?.groupValues?.get(1)?.let { android.text.Html.fromHtml(it, 0).toString() } ?: ""
+        val owner = Regex("""<meta property="og:title" content="([^"]*)"""").find(html)
+            ?.groupValues?.get(1)?.let { android.text.Html.fromHtml(it, 0).toString() } ?: "Facebook"
+        fun result(u: String) = Extracted(listOf(Media(u, "mp4", "facebook_$id", thumb)), caption, owner, "facebook")
+
         for (key in KEYS) {
             val m = Regex("\"$key\":\"([^\"]+)\"").find(html) ?: continue
-            return listOf(Media(Net.unescapeJson(m.groupValues[1]), "mp4", "facebook_$id", thumb))
+            return result(Net.unescapeJson(m.groupValues[1]))
         }
         for (key in listOf("hd_src", "sd_src")) {
             val m = Regex("$key:\"([^\"]+)\"").find(html) ?: continue
-            return listOf(Media(Net.unescapeJson(m.groupValues[1]), "mp4", "facebook_$id", thumb))
+            return result(Net.unescapeJson(m.groupValues[1]))
         }
 
         throw ExtractException(

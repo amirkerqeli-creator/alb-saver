@@ -7,6 +7,9 @@ import java.net.URL
 
 data class Media(val url: String, val ext: String, val name: String, val thumb: String? = null)
 
+/** Ergebnis einer Link-Analyse: Medien + Beschreibung des Posts */
+data class Extracted(val items: List<Media>, val caption: String, val owner: String, val source: String)
+
 class ExtractException(msg: String) : Exception(msg)
 
 object Net {

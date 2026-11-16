@@ -6,18 +6,19 @@ import android.net.Uri
 import android.os.Environment
 
 object Saver {
-    fun extract(url: String): List<Media> {
+    fun extract(url: String): Extracted {
         val host = Uri.parse(url).host?.lowercase() ?: throw ExtractException("Ungültiger Link.")
         return when {
             Instagram.matches(host) -> Instagram.extract(url)
             Facebook.matches(host) -> Facebook.extract(url)
             else -> throw ExtractException("Nur Instagram- und Facebook-Links werden unterstützt.")
-        }.ifEmpty { throw ExtractException("Nichts zum Herunterladen gefunden.") }
+        }.also { if (it.items.isEmpty()) throw ExtractException("Nichts zum Herunterladen gefunden.") }
     }
 
-    fun enqueue(ctx: Context, items: List<Media>) {
+    /** Startet die Downloads und gibt die DownloadManager-IDs zurück (gleiche Reihenfolge). */
+    fun enqueue(ctx: Context, items: List<Media>): List<Long> {
         val dm = ctx.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        items.forEachIndexed { i, m ->
+        return items.mapIndexed { i, m ->
             val dir = if (m.ext == "mp4") Environment.DIRECTORY_MOVIES else Environment.DIRECTORY_PICTURES
             val suffix = if (items.size > 1 && items.count { it.name == m.name } > 1) "_${i + 1}" else ""
             val fileName = m.name.replace(Regex("[^A-Za-z0-9._-]"), "_") + suffix + "." + m.ext

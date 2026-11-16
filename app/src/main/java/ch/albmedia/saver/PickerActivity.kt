@@ -28,9 +28,12 @@ class PickerActivity : Activity() {
 
     companion object {
         /** Wird von MainActivity vor dem Start gesetzt (einfacher als Parcelable). */
-        var pending: List<Media> = emptyList()
+        var pending: Extracted? = null
+        var pendingUrl: String = ""
     }
 
+    private lateinit var info: Extracted
+    private lateinit var sourceUrl: String
     private lateinit var items: List<Media>
     private val selected = mutableSetOf<Int>()
     private lateinit var title: TextView
@@ -45,7 +48,9 @@ class PickerActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        items = pending
+        info = pending ?: run { finish(); return }
+        sourceUrl = pendingUrl
+        items = info.items
         if (items.isEmpty()) { finish(); return }
         selected.addAll(items.indices) // standardmässig alles ausgewählt
 
@@ -131,7 +136,15 @@ class PickerActivity : Activity() {
     private fun download() {
         val chosen = selected.sorted().map { items[it] }
         try {
-            Saver.enqueue(applicationContext, chosen)
+            val ids = Saver.enqueue(applicationContext, chosen)
+            History.add(
+                applicationContext,
+                Post(
+                    id = System.currentTimeMillis(), url = sourceUrl, caption = info.caption,
+                    owner = info.owner, source = info.source, time = System.currentTimeMillis(),
+                    entries = chosen.mapIndexed { i, m -> Entry(m.url, m.thumb, m.ext, ids[i]) }
+                )
+            )
             Toast.makeText(this, "✓ ${chosen.size} wird gespeichert", Toast.LENGTH_SHORT).show()
             setResult(RESULT_OK)
             finish()

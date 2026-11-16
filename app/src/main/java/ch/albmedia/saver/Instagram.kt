@@ -14,7 +14,7 @@ object Instagram {
 
     fun isLoggedIn() = Net.cookies(BASE).contains("sessionid=")
 
-    fun extract(input: String): List<Media> {
+    fun extract(input: String): Extracted {
         if (!isLoggedIn()) throw ExtractException("Bitte zuerst unten „Bei Instagram anmelden“ tippen.")
 
         var uri = Uri.parse(input)
@@ -77,22 +77,26 @@ object Instagram {
         }
     }
 
-    private fun mediaInfo(mediaId: String): List<Media> {
+    private fun mediaInfo(mediaId: String): Extracted {
         val items = api("media/$mediaId/info/").optJSONArray("items")
             ?: throw ExtractException("Kein Inhalt gefunden.")
         val out = mutableListOf<Media>()
         for (i in 0 until items.length()) parseItem(items.getJSONObject(i), null, out)
-        return out
+        val first = items.optJSONObject(0)
+        val caption = first?.optJSONObject("caption")?.optString("text") ?: ""
+        val owner = first?.optJSONObject("user")?.optString("username") ?: ""
+        return Extracted(out, caption, owner, "instagram")
     }
 
-    private fun reels(reelId: String): List<Media> {
+    private fun reels(reelId: String): Extracted {
         val json = api("feed/reels_media/?reel_ids=" + URLEncoder.encode(reelId, "UTF-8"))
         val items = json.optJSONObject("reels")?.optJSONObject(reelId)?.optJSONArray("items")
             ?: json.optJSONArray("reels_media")?.optJSONObject(0)?.optJSONArray("items")
             ?: throw ExtractException("Keine aktuellen Stories gefunden.")
         val out = mutableListOf<Media>()
         for (i in 0 until items.length()) parseItem(items.getJSONObject(i), null, out)
-        return out
+        val owner = items.optJSONObject(0)?.optJSONObject("user")?.optString("username") ?: ""
+        return Extracted(out, "", owner, "instagram")
     }
 
     private fun userId(username: String): String {
